@@ -1,1 +1,1 @@
-# soft
+# NkortaQR
