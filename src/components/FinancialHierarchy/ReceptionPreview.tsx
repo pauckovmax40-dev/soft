@@ -50,7 +50,7 @@ const TransactionGroup: React.FC<TransactionGroupProps> = ({ type, items }) => {
         </div>
         <div className="flex items-center gap-3">
           <span className={`text-sm font-semibold ${textColor}`}>
-            {isIncome ? '+' : '-'} {total.toLocaleString('ru-RU')} ₽
+            {isIncome ? '+' : '-'} {Math.abs(total).toLocaleString('ru-RU')} ₽
           </span>
           <button className="text-gray-600">
             {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -82,7 +82,7 @@ const BaseItemGroup: React.FC<BaseItemGroupProps> = ({ baseItemName, items }) =>
 
   const incomeTotal = incomeItems.reduce((sum, item) => sum + (item.quantity * item.price), 0)
   const expenseTotal = expenseItems.reduce((sum, item) => sum + (item.quantity * item.price), 0)
-  const profit = incomeTotal - expenseTotal
+  const profit = incomeTotal + expenseTotal
 
   return (
     <div className="bg-blue-50 rounded-lg px-3 py-2">
@@ -93,7 +93,7 @@ const BaseItemGroup: React.FC<BaseItemGroupProps> = ({ baseItemName, items }) =>
         <h3 className="text-sm font-medium text-gray-800 flex-1">{baseItemName}</h3>
         <div className="flex items-center gap-3">
           <span className="text-xs text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
-          <span className="text-xs text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-red-600 font-medium">↘ {Math.abs(expenseTotal).toLocaleString('ru-RU')} ₽</span>
           <span className="text-xs text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
           <button className="text-gray-600">
             {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -134,7 +134,7 @@ const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items }) => {
   const expenseTotal = items
     .filter(item => item.transactionType === 'Расходы')
     .reduce((sum, item) => sum + (item.quantity * item.price), 0)
-  const profit = incomeTotal - expenseTotal
+  const profit = incomeTotal + expenseTotal
 
   return (
     <div className="border-l-4 border-blue-400 pl-3">
@@ -145,7 +145,7 @@ const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items }) => {
         <h2 className="text-sm font-medium text-gray-800 flex-1">{workGroup}</h2>
         <div className="flex items-center gap-3">
           <span className="text-xs text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
-          <span className="text-xs text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-red-600 font-medium">↘ {Math.abs(expenseTotal).toLocaleString('ru-RU')} ₽</span>
           <span className="text-xs text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
           <button className="text-gray-600">
             {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -191,7 +191,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items }) 
   const expenseTotal = items
     .filter(item => item.transactionType === 'Расходы')
     .reduce((sum, item) => sum + (item.quantity * item.price), 0)
-  const profit = incomeTotal - expenseTotal
+  const profit = incomeTotal + expenseTotal
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
@@ -210,7 +210,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items }) 
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
-          <span className="text-sm text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-sm text-red-600 font-medium">↘ {Math.abs(expenseTotal).toLocaleString('ru-RU')} ₽</span>
           <span className="text-sm text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
           <button className="text-gray-600">
             {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
