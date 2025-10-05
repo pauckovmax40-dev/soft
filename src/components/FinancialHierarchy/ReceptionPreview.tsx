@@ -6,39 +6,18 @@ interface ReceptionPreviewProps {
   data: ReceptionExcelRow[]
 }
 
-interface CollapsibleHeaderProps {
-  isExpanded: boolean
-  toggle: () => void
-  children: React.ReactNode
-  className?: string
-}
-
-const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
-  isExpanded,
-  toggle,
-  children,
-  className = '',
-}) => (
-  <div
-    onClick={toggle}
-    className={`flex items-center justify-between cursor-pointer transition-all duration-150 ${className}`}
-  >
-    {children}
-    <button className="text-gray-600 hover:text-blue-600 flex-shrink-0 transition-colors ml-2">
-      {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-    </button>
-  </div>
-)
-
 interface PositionItemProps {
   item: ReceptionExcelRow
 }
 
 const PositionItem: React.FC<PositionItemProps> = ({ item }) => {
   return (
-    <div className="flex justify-between items-center py-1.5 hover:bg-gray-50 rounded transition-colors">
-      <div className="flex-grow min-w-0">
-        <p className="text-sm text-gray-900 truncate">{item.itemName}</p>
+    <div className="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-50 transition-colors">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-gray-900">{item.itemName}</p>
+      </div>
+      <div className="text-right">
+        <p className="text-sm text-gray-900">{item.quantity}</p>
       </div>
     </div>
   )
@@ -55,22 +34,29 @@ const TransactionGroup: React.FC<TransactionGroupProps> = ({ type, items }) => {
   if (items.length === 0) return null
 
   const isIncome = type === 'Доходы'
-  const textColor = isIncome ? 'text-green-800' : 'text-red-800'
+  const textColor = isIncome ? 'text-green-600' : 'text-red-600'
+
+  const total = items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
 
   return (
     <div>
-      <CollapsibleHeader
-        isExpanded={isExpanded}
-        toggle={() => setIsExpanded(!isExpanded)}
-        className="py-1.5 px-2 hover:bg-gray-50 rounded"
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between cursor-pointer py-1.5 px-2 hover:bg-gray-50 rounded"
       >
-        <h4 className={`text-sm ${textColor} flex-grow min-w-0`}>
-          {type}
-        </h4>
-        <span className={`text-sm font-semibold ${textColor}`}>
-          ({items.length})
-        </span>
-      </CollapsibleHeader>
+        <div className="flex items-center gap-2 flex-1">
+          <span className="text-sm text-gray-600">{isIncome ? '↗' : '↘'}</span>
+          <h4 className={`text-sm font-medium ${textColor}`}>{type}</h4>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-sm font-semibold ${textColor}`}>
+            {isIncome ? '+' : '-'} {total.toLocaleString('ru-RU')} ₽
+          </span>
+          <button className="text-gray-600">
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        </div>
+      </div>
 
       {isExpanded && (
         <div className="mt-1 space-y-1 pl-4">
@@ -94,23 +80,29 @@ const BaseItemGroup: React.FC<BaseItemGroupProps> = ({ baseItemName, items }) =>
   const incomeItems = items.filter(item => item.transactionType === 'Доходы')
   const expenseItems = items.filter(item => item.transactionType === 'Расходы')
 
+  const incomeTotal = incomeItems.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const expenseTotal = expenseItems.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const profit = incomeTotal - expenseTotal
+
   return (
-    <div>
-      <CollapsibleHeader
-        isExpanded={isExpanded}
-        toggle={() => setIsExpanded(!isExpanded)}
-        className="py-2 px-2 hover:bg-blue-50 rounded"
+    <div className="bg-blue-50 rounded-lg px-3 py-2">
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between cursor-pointer"
       >
-        <h3 className="text-sm text-gray-800 flex-grow min-w-0">
-          {baseItemName}
-        </h3>
-        <span className="text-sm text-gray-600">
-          ({items.length})
-        </span>
-      </CollapsibleHeader>
+        <h3 className="text-sm font-medium text-gray-800 flex-1">{baseItemName}</h3>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
+          <button className="text-gray-600">
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        </div>
+      </div>
 
       {isExpanded && (
-        <div className="mt-2 space-y-2 pl-4">
+        <div className="mt-2 space-y-2 pl-3">
           <TransactionGroup type="Доходы" items={incomeItems} />
           <TransactionGroup type="Расходы" items={expenseItems} />
         </div>
@@ -136,23 +128,33 @@ const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items }) => {
     baseItemMap.get(baseName)!.push(item)
   }
 
+  const incomeTotal = items
+    .filter(item => item.transactionType === 'Доходы')
+    .reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const expenseTotal = items
+    .filter(item => item.transactionType === 'Расходы')
+    .reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const profit = incomeTotal - expenseTotal
+
   return (
-    <div className="border-l-4 border-blue-400 pl-4">
-      <CollapsibleHeader
-        isExpanded={isExpanded}
-        toggle={() => setIsExpanded(!isExpanded)}
-        className="py-2 px-2 hover:bg-blue-50 rounded"
+    <div className="border-l-4 border-blue-400 pl-3">
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between cursor-pointer py-2 px-3 hover:bg-blue-50 rounded"
       >
-        <h2 className="text-sm font-medium text-gray-800 flex-grow min-w-0">
-          {workGroup}
-        </h2>
-        <span className="text-sm text-gray-600">
-          ({items.length})
-        </span>
-      </CollapsibleHeader>
+        <h2 className="text-sm font-medium text-gray-800 flex-1">{workGroup}</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-xs text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
+          <button className="text-gray-600">
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        </div>
+      </div>
 
       {isExpanded && (
-        <div className="mt-2 space-y-2 pl-4">
+        <div className="mt-2 space-y-2 pl-2">
           {Array.from(baseItemMap.entries()).map(([baseName, baseItems]) => (
             <BaseItemGroup
               key={baseName}
@@ -183,26 +185,38 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items }) 
     workGroupMap.get(item.workGroup)!.push(item)
   }
 
+  const incomeTotal = items
+    .filter(item => item.transactionType === 'Доходы')
+    .reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const expenseTotal = items
+    .filter(item => item.transactionType === 'Расходы')
+    .reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const profit = incomeTotal - expenseTotal
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-      <CollapsibleHeader
-        isExpanded={isExpanded}
-        toggle={() => setIsExpanded(!isExpanded)}
-        className="p-3 hover:bg-gray-50 rounded-t-lg"
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-t-lg cursor-pointer"
       >
-        <span className="flex items-center justify-center w-7 h-7 bg-blue-600 text-white rounded-full text-sm font-bold flex-shrink-0">
-          {positionNumber}
-        </span>
-        <div className="flex-grow min-w-0 ml-3">
-          <h2 className="text-sm font-semibold text-gray-900">
-            {firstItem.serviceName}
-          </h2>
-          <p className="text-xs text-gray-600">{firstItem.subdivisionName}</p>
+        <div className="flex items-center gap-3 flex-1">
+          <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">
+            {positionNumber}
+          </span>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">{firstItem.serviceName}</h2>
+            <p className="text-xs text-gray-600">{firstItem.subdivisionName}</p>
+          </div>
         </div>
-        <span className="text-sm text-gray-600">
-          {items.length} работ(ы)
-        </span>
-      </CollapsibleHeader>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-green-600 font-medium">↗ {incomeTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-sm text-red-600 font-medium">↘ {expenseTotal.toLocaleString('ru-RU')} ₽</span>
+          <span className="text-sm text-blue-600 font-semibold">₽ {profit.toLocaleString('ru-RU')} ₽</span>
+          <button className="text-gray-600">
+            {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </button>
+        </div>
+      </div>
 
       {isExpanded && (
         <div className="px-4 pb-4 space-y-3">
